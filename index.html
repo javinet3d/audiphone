@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AudiPhone" />
+  <title>AudiPhone · Amplificador Auditivo</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-alt: #263348;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-dark: #0284c7;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 14px 24px;
+      user-select: none;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 2px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand img {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+    }
+
+    .brand h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .brand span {
+      font-size: 0.72rem;
+      color: var(--accent);
+      display: block;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-badge.active {
+      background: rgba(34, 197, 94, 0.14);
+      border-color: rgba(34, 197, 94, 0.45);
+      color: #4ade80;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .status-badge.active .dot {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse 1.4s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+
+    #installBtn {
+      display: none;
+      background: var(--accent-dark);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .section-label {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Quick Mic Source Selector (Phone vs Bluetooth) */
+    .mic-mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .mic-mode-btn {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 8px;
+      color: var(--text);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .mic-mode-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .mic-mode-btn small {
+      font-size: 0.66rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .mic-mode-btn.active {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: var(--accent);
+      color: #7dd3fc;
+    }
+
+    .mic-mode-btn.active small {
+      color: #bae6fd;
+    }
+
+    .mic-select-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    select {
+      flex: 1;
+      width: 100%;
+      background: #0b1120;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    .refresh-btn {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .refresh-btn:active {
+      background: var(--accent-dark);
+    }
+
+    .active-source-pill {
+      font-size: 0.74rem;
+      background: #0b1120;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .active-source-pill strong {
+      color: var(--accent);
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bt-note {
+      display: none;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.75rem;
+      line-height: 1.35;
+      color: #bae6fd;
+    }
+
+    .bt-note.visible {
+      display: block;
+    }
+
+    /* Main Power & Visualizer */
+    .power-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #powerBtn {
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      border: 3px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    }
+
+    #powerBtn svg {
+      width: 28px;
+      height: 28px;
+      stroke: currentColor;
+      stroke-width: 2.4;
+      fill: none;
+    }
+
+    #powerBtn span {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    #powerBtn.on {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      border-color: #7dd3fc;
+      color: #ffffff;
+      box-shadow: 0 0 22px rgba(14, 165, 233, 0.45);
+    }
+
+    .meter-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .meter-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    canvas#visualizer {
+      width: 100%;
+      height: 54px;
+      background: #0b1120;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    /* Amplification Control */
+    .gain-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .gain-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .gain-value-badge {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .gain-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-left: 4px;
+      font-weight: 600;
+    }
+
+    .slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .step-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+      font-size: 1.35rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-btn:active {
+      background: var(--accent-dark);
+      border-color: var(--accent);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: #0b1120;
+      border: 1px solid var(--border);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid #ffffff;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid #ffffff;
+      cursor: pointer;
+    }
+
+    .scale-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--muted);
+      padding: 0 48px;
+    }
+
+    /* Presets */
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .preset-btn {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 9px 6px;
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .preset-btn small {
+      font-size: 0.65rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .preset-btn.active {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: var(--accent);
+      color: #7dd3fc;
+    }
+
+    /* Fine Tuning Controls */
+    .control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .control-row-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .control-row-top span:last-child {
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mini-range {
+      height: 8px !important;
+    }
+
+    .mini-range::-webkit-slider-thumb {
+      width: 22px !important;
+      height: 22px !important;
+    }
+
+    /* Toggles */
+    .toggles-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .toggle-btn {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 10px 10px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .toggle-btn.active {
+      background: rgba(34, 197, 94, 0.14);
+      border-color: rgba(34, 197, 94, 0.45);
+      color: #86efac;
+    }
+
+    .pill-state {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.25);
+      font-weight: 700;
+    }
+
+    .error-msg {
+      display: none;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      line-height: 1.35;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <div class="brand">
+        <img src="icon.svg" alt="AudiPhone Logo" />
+        <div>
+          <h1>AudiPhone</h1>
+          <span>Amplificador Auditivo</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="installBtn">Instalar App</button>
+        <div id="statusBadge" class="status-badge">
+          <div class="dot"></div>
+          <span id="statusText">En espera</span>
+        </div>
+      </div>
+    </header>
+
+    <div id="errorBox" class="error-msg"></div>
+
+    <!-- Power & Live Meter -->
+    <div class="card">
+      <div class="power-row">
+        <button id="powerBtn" aria-label="Activar o desactivar micrófono">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+            <line x1="12" y1="2" x2="12" y2="12"/>
+          </svg>
+          <span id="powerLabel">ACTIVAR</span>
+        </button>
+        <div class="meter-box">
+          <div class="meter-header">
+            <span>Nivel de entrada</span>
+            <span id="dbMeterLabel">-- dB</span>
+          </div>
+          <canvas id="visualizer" width="320" height="54"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Microphone Source Selection (Forces Phone Mic even with Bluetooth connected) -->
+    <div class="card">
+      <div class="section-label">
+        <span>Origen del Micrófono</span>
+        <span id="btDetectedTag" style="color: #38bdf8; display: none;">● BT Detectado</span>
+      </div>
+
+      <div class="mic-mode-grid">
+        <button class="mic-mode-btn active" id="modePhoneBtn" data-mode="phone">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+            <line x1="12" y1="18" x2="12.01" y2="18"/>
+          </svg>
+          <span>Micro del Teléfono</span>
+          <small>Escuchar por BT / Cable</small>
+        </button>
+        <button class="mic-mode-btn" id="modeBtBtn" data-mode="external">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+          </svg>
+          <span>Micro Auricular / BT</span>
+          <small>Usar micro externo</small>
+        </button>
+      </div>
+
+      <div class="mic-select-row">
+        <select id="micSelect" aria-label="Seleccionar dispositivo de micrófono">
+          <option value="">Cargando micrófonos...</option>
+        </select>
+        <button class="refresh-btn" id="refreshMicsBtn" title="Actualizar lista de micrófonos" aria-label="Actualizar micrófonos">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="active-source-pill">
+        <span>Capturando desde:</span>
+        <strong id="activeMicLabel">Micrófono interno del teléfono</strong>
+      </div>
+
+      <div id="btNote" class="bt-note">
+        <strong>Modo teléfono + auriculares Bluetooth:</strong> Al capturar con el micrófono interno del móvil y reproducir por tus auriculares Bluetooth, el sonido mantiene alta calidad estéreo (A2DP) y evita el perfil de llamada (HFP). Si Android fuerza el micro Bluetooth, desactiva <em>"Audio de llamadas"</em> en los ajustes Bluetooth de tus auriculares.
+      </div>
+    </div>
+
+    <!-- Main Amplification Gain -->
+    <div class="card">
+      <div class="gain-header">
+        <span class="gain-title">Amplificación</span>
+        <div>
+          <span id="gainVal" class="gain-value-badge">2.5x</span>
+          <span id="gainDbVal" class="gain-sub">(+8.0 dB)</span>
+        </div>
+      </div>
+
+      <div class="slider-wrap">
+        <button class="step-btn" id="gainDown" aria-label="Reducir amplificación">−</button>
+        <input type="range" id="gainSlider" min="0.5" max="10" step="0.1" value="2.5" />
+        <button class="step-btn" id="gainUp" aria-label="Aumentar amplificación">+</button>
+      </div>
+      <div class="scale-ticks">
+        <span>0.5x</span>
+        <span>2.5x</span>
+        <span>5.0x</span>
+        <span>7.5x</span>
+        <span>10x</span>
+      </div>
+
+      <div class="section-label">Perfiles de Audición</div>
+      <div class="presets-grid">
+        <button class="preset-btn" data-preset="natural">
+          <span>Natural</span>
+          <small>Plano · Suave</small>
+        </button>
+        <button class="preset-btn active" data-preset="voice">
+          <span>Claridad Voz</span>
+          <small>Realce 2-4 kHz</small>
+        </button>
+        <button class="preset-btn" data-preset="tv">
+          <span>TV / Sala</span>
+          <small>Menos graves</small>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tone & Protection Settings -->
+    <div class="card">
+      <div class="section-label">Ajuste Acústico y Protección</div>
+
+      <div class="control-row">
+        <div class="control-row-top">
+          <span>Claridad de Consonantes (Agudos)</span>
+          <span id="trebleVal">+6 dB</span>
+        </div>
+        <input type="range" class="mini-range" id="trebleSlider" min="-6" max="15" step="1" value="6" />
+      </div>
+
+      <div class="control-row">
+        <div class="control-row-top">
+          <span>Filtro Ruido Grave (Zumbidos)</span>
+          <span id="lowCutVal">180 Hz</span>
+        </div>
+        <input type="range" class="mini-range" id="lowCutSlider" min="60" max="450" step="10" value="180" />
+      </div>
+
+      <div class="control-row">
+        <div class="control-row-top">
+          <span>Balance Izquierda / Derecha</span>
+          <span id="panVal">Centro</span>
+        </div>
+        <input type="range" class="mini-range" id="panSlider" min="-1" max="1" step="0.1" value="0" />
+      </div>
+
+      <div class="toggles-grid">
+        <button class="toggle-btn active" id="limiterToggle">
+          <span>Limitador Picos</span>
+          <span class="pill-state" id="limiterState">ON</span>
+        </button>
+        <button class="toggle-btn" id="nrToggle">
+          <span>Supresor Eco/Ruido</span>
+          <span class="pill-state" id="nrState">OFF</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    // PWA Install Prompt
+    let deferredPrompt = null;
+    const installBtn = document.getElementById('installBtn');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'inline-block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      installBtn.style.display = 'none';
+    });
+
+    // DOM Elements
+    const powerBtn = document.getElementById('powerBtn');
+    const powerLabel = document.getElementById('powerLabel');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusText = document.getElementById('statusText');
+    const errorBox = document.getElementById('errorBox');
+
+    const modePhoneBtn = document.getElementById('modePhoneBtn');
+    const modeBtBtn = document.getElementById('modeBtBtn');
+    const micSelect = document.getElementById('micSelect');
+    const refreshMicsBtn = document.getElementById('refreshMicsBtn');
+    const activeMicLabel = document.getElementById('activeMicLabel');
+    const btDetectedTag = document.getElementById('btDetectedTag');
+    const btNote = document.getElementById('btNote');
+
+    const gainSlider = document.getElementById('gainSlider');
+    const gainVal = document.getElementById('gainVal');
+    const gainDbVal = document.getElementById('gainDbVal');
+    const gainDown = document.getElementById('gainDown');
+    const gainUp = document.getElementById('gainUp');
+
+    const trebleSlider = document.getElementById('trebleSlider');
+    const trebleVal = document.getElementById('trebleVal');
+    const lowCutSlider = document.getElementById('lowCutSlider');
+    const lowCutVal = document.getElementById('lowCutVal');
+    const panSlider = document.getElementById('panSlider');
+    const panVal = document.getElementById('panVal');
+
+    const limiterToggle = document.getElementById('limiterToggle');
+    const limiterState = document.getElementById('limiterState');
+    const nrToggle = document.getElementById('nrToggle');
+    const nrState = document.getElementById('nrState');
+    const presetBtns = document.querySelectorAll('.preset-btn');
+
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+    const dbMeterLabel = document.getElementById('dbMeterLabel');
+
+    // Audio State
+    let audioCtx = null;
+    let mediaStream = null;
+    let sourceNode = null;
+    let highPassFilter = null;
+    let voicePresenceFilter = null;
+    let trebleFilter = null;
+    let gainNode = null;
+    let compressorNode = null;
+    let pannerNode = null;
+    let analyserNode = null;
+    let isRunning = false;
+    let animFrameId = null;
+
+    let limiterEnabled = true;
+    let noiseSuppressionEnabled = false;
+    let micMode = 'phone'; // 'phone' | 'external'
+    let availableMics = [];
+
+    // Load saved settings
+    const saved = JSON.parse(localStorage.getItem('audiphone_prefs') || '{}');
+    if (saved.gain) gainSlider.value = saved.gain;
+    if (saved.treble !== undefined) trebleSlider.value = saved.treble;
+    if (saved.lowCut) lowCutSlider.value = saved.lowCut;
+    if (saved.pan !== undefined) panSlider.value = saved.pan;
+    if (saved.limiter !== undefined) limiterEnabled = saved.limiter;
+    if (saved.nr !== undefined) noiseSuppressionEnabled = saved.nr;
+    if (saved.micMode) micMode = saved.micMode;
+
+    function savePrefs() {
+      localStorage.setItem('audiphone_prefs', JSON.stringify({
+        gain: parseFloat(gainSlider.value),
+        treble: parseFloat(trebleSlider.value),
+        lowCut: parseFloat(lowCutSlider.value),
+        pan: parseFloat(panSlider.value),
+        limiter: limiterEnabled,
+        nr: noiseSuppressionEnabled,
+        micMode: micMode,
+        selectedDeviceId: micSelect.value || ''
+      }));
+    }
+
+    // Classify microphone labels across Android Chrome, Desktop, and iOS
+    function classifyMic(label) {
+      const l = (label || '').toLowerCase();
+      if (l.includes('bluetooth') || l.includes('hands-free') || l.includes('headset') || l.includes('airpods') || l.includes('buds') || l.includes('freebuds') || l.includes('sco')) {
+        return 'bluetooth';
+      }
+      if (l.includes('wired') || l.includes('usb') || l.includes('external') || l.includes('jack')) {
+        return 'wired';
+      }
+      if (l.includes('built-in') || l.includes('internal') || l.includes('speakerphone') || l.includes('earpiece') || l.includes('bottom') || l.includes('top') || l.includes('back') || l.includes('front') || l.includes('predeterminado') || l.includes('default')) {
+        return 'phone';
+      }
+      return 'unknown';
+    }
+
+    function formatMicDisplayName(mic, idx) {
+      const raw = mic.label || '';
+      const kind = classifyMic(raw);
+      if (!raw) return `Micrófono ${idx + 1}`;
+      if (kind === 'bluetooth') return `🎧 Bluetooth: ${raw}`;
+      if (kind === 'wired') return `🔌 Cable/USB: ${raw}`;
+      if (raw.toLowerCase().includes('speakerphone') || raw.toLowerCase().includes('built-in')) {
+        return `📱 Teléfono (Interno): ${raw}`;
+      }
+      return `📱 ${raw}`;
+    }
+
+    async function populateMicrophones(autoSelectByMode = false) {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const mics = devices.filter(d => d.kind === 'audioinput');
+        availableMics = mics;
+
+        const prevSelected = micSelect.value || saved.selectedDeviceId || '';
+        micSelect.innerHTML = '';
+
+        let hasBt = false;
+        let phoneCandidateId = '';
+        let externalCandidateId = '';
+
+        mics.forEach((mic, idx) => {
+          const kind = classifyMic(mic.label);
+          if (kind === 'bluetooth') hasBt = true;
+
+          // Identify best internal phone mic (avoid 'default' if specific built-in exists, because 'default' switches to BT!)
+          if (kind === 'phone' && !mic.deviceId.includes('default') && !phoneCandidateId) {
+            phoneCandidateId = mic.deviceId;
+          }
+          if ((kind === 'bluetooth' || kind === 'wired') && !externalCandidateId) {
+            externalCandidateId = mic.deviceId;
+          }
+
+          const opt = document.createElement('option');
+          opt.value = mic.deviceId;
+          opt.textContent = formatMicDisplayName(mic, idx);
+          micSelect.appendChild(opt);
+        });
+
+        // Fallback phone candidate if none explicitly tagged
+        if (!phoneCandidateId) {
+          const nonBt = mics.find(m => classifyMic(m.label) !== 'bluetooth' && m.deviceId !== 'default');
+          if (nonBt) phoneCandidateId = nonBt.deviceId;
+          else if (mics.length > 0) phoneCandidateId = mics[0].deviceId;
+        }
+
+        btDetectedTag.style.display = hasBt ? 'inline' : 'none';
+        btNote.classList.toggle('visible', hasBt && micMode === 'phone');
+
+        if (autoSelectByMode) {
+          if (micMode === 'phone' && phoneCandidateId) {
+            micSelect.value = phoneCandidateId;
+          } else if (micMode === 'external' && externalCandidateId) {
+            micSelect.value = externalCandidateId;
+          } else if (prevSelected && mics.some(m => m.deviceId === prevSelected)) {
+            micSelect.value = prevSelected;
+          }
+        } else if (prevSelected && mics.some(m => m.deviceId === prevSelected)) {
+          micSelect.value = prevSelected;
+        } else if (phoneCandidateId) {
+          micSelect.value = phoneCandidateId;
+        }
+
+        updateActiveMicLabel();
+      } catch (e) {}
+    }
+
+    function updateActiveMicLabel() {
+      const selectedOpt = micSelect.options[micSelect.selectedIndex];
+      if (selectedOpt && selectedOpt.textContent) {
+        activeMicLabel.textContent = selectedOpt.textContent.replace(/^[^\w\s]+\s*/, '');
+      } else {
+        activeMicLabel.textContent = micMode === 'phone' ? 'Micrófono interno del teléfono' : 'Micrófono externo / Bluetooth';
+      }
+    }
+
+    function updateMicModeButtons() {
+      modePhoneBtn.classList.toggle('active', micMode === 'phone');
+      modeBtBtn.classList.toggle('active', micMode === 'external');
+    }
+
+    function updateUIValues() {
+      const g = parseFloat(gainSlider.value);
+      const db = (20 * Math.log10(g)).toFixed(1);
+      gainVal.textContent = g.toFixed(1) + 'x';
+      gainDbVal.textContent = `(${db >= 0 ? '+' : ''}${db} dB)`;
+
+      const t = parseFloat(trebleSlider.value);
+      trebleVal.textContent = `${t >= 0 ? '+' : ''}${t} dB`;
+
+      const lc = parseFloat(lowCutSlider.value);
+      lowCutVal.textContent = `${lc} Hz`;
+
+      const p = parseFloat(panSlider.value);
+      if (Math.abs(p) < 0.05) {
+        panVal.textContent = 'Centro';
+      } else if (p < 0) {
+        panVal.textContent = `Izq ${Math.round(Math.abs(p) * 100)}%`;
+      } else {
+        panVal.textContent = `Der ${Math.round(p * 100)}%`;
+      }
+
+      limiterToggle.classList.toggle('active', limiterEnabled);
+      limiterState.textContent = limiterEnabled ? 'ON' : 'OFF';
+
+      nrToggle.classList.toggle('active', noiseSuppressionEnabled);
+      nrState.textContent = noiseSuppressionEnabled ? 'ON' : 'OFF';
+
+      updateMicModeButtons();
+      applyAudioParams();
+      savePrefs();
+    }
+
+    function applyAudioParams() {
+      if (!audioCtx || !isRunning) return;
+      const now = audioCtx.currentTime;
+      if (gainNode) {
+        gainNode.gain.setTargetAtTime(parseFloat(gainSlider.value), now, 0.03);
+      }
+      if (highPassFilter) {
+        highPassFilter.frequency.setTargetAtTime(parseFloat(lowCutSlider.value), now, 0.03);
+      }
+      if (trebleFilter) {
+        trebleFilter.gain.setTargetAtTime(parseFloat(trebleSlider.value), now, 0.03);
+      }
+      if (pannerNode) {
+        pannerNode.pan.setTargetAtTime(parseFloat(panSlider.value), now, 0.03);
+      }
+      if (compressorNode) {
+        if (limiterEnabled) {
+          compressorNode.threshold.setTargetAtTime(-10, now, 0.03);
+          compressorNode.knee.setTargetAtTime(6, now, 0.03);
+          compressorNode.ratio.setTargetAtTime(16, now, 0.03);
+          compressorNode.attack.setTargetAtTime(0.002, now, 0.01);
+          compressorNode.release.setTargetAtTime(0.12, now, 0.03);
+        } else {
+          compressorNode.threshold.setTargetAtTime(0, now, 0.03);
+          compressorNode.ratio.setTargetAtTime(1, now, 0.03);
+        }
+      }
+    }
+
+    async function startAudio() {
+      errorBox.style.display = 'none';
+      try {
+        // First ensure we have device labels if not yet granted
+        if (availableMics.length === 0 || !availableMics[0].label) {
+          const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          tempStream.getTracks().forEach(t => t.stop());
+          await populateMicrophones(true);
+        }
+
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass({ latencyHint: 'interactive' });
+        if (audioCtx.state === 'suspended') {
+          await audioCtx.resume();
+        }
+
+        const chosenDeviceId = micSelect.value;
+
+        // Note: Disabling echoCancellation when using internal phone mic + BT headphones
+        // prevents Android Chrome from forcing Bluetooth SCO (HFP) call routing!
+        const constraints = {
+          audio: {
+            deviceId: chosenDeviceId ? { exact: chosenDeviceId } : undefined,
+            echoCancellation: noiseSuppressionEnabled,
+            noiseSuppression: noiseSuppressionEnabled,
+            autoGainControl: false
+          }
+        };
+
+        try {
+          mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (exactErr) {
+          // Fallback if exact deviceId is temporarily unavailable
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              deviceId: chosenDeviceId ? { ideal: chosenDeviceId } : undefined,
+              echoCancellation: noiseSuppressionEnabled,
+              noiseSuppression: noiseSuppressionEnabled,
+              autoGainControl: false
+            }
+          });
+        }
+
+        // Verify actual active track label & sync selector
+        const activeTrack = mediaStream.getAudioTracks()[0];
+        if (activeTrack) {
+          const settings = activeTrack.getSettings ? activeTrack.getSettings() : {};
+          if (settings.deviceId) {
+            micSelect.value = settings.deviceId;
+          }
+          if (activeTrack.label) {
+            activeMicLabel.textContent = activeTrack.label;
+          }
+        }
+
+        sourceNode = audioCtx.createMediaStreamSource(mediaStream);
+
+        highPassFilter = audioCtx.createBiquadFilter();
+        highPassFilter.type = 'highpass';
+        highPassFilter.frequency.value = parseFloat(lowCutSlider.value);
+        highPassFilter.Q.value = 0.7;
+
+        voicePresenceFilter = audioCtx.createBiquadFilter();
+        voicePresenceFilter.type = 'peaking';
+        voicePresenceFilter.frequency.value = 2500;
+        voicePresenceFilter.Q.value = 1.1;
+        voicePresenceFilter.gain.value = 3.5;
+
+        trebleFilter = audioCtx.createBiquadFilter();
+        trebleFilter.type = 'highshelf';
+        trebleFilter.frequency.value = 3800;
+        trebleFilter.gain.value = parseFloat(trebleSlider.value);
+
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = parseFloat(gainSlider.value);
+
+        compressorNode = audioCtx.createDynamicsCompressor();
+
+        pannerNode = audioCtx.createStereoPanner();
+        pannerNode.pan.value = parseFloat(panSlider.value);
+
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 256;
+        analyserNode.smoothingTimeConstant = 0.75;
+
+        sourceNode.connect(highPassFilter);
+        highPassFilter.connect(voicePresenceFilter);
+        voicePresenceFilter.connect(trebleFilter);
+        trebleFilter.connect(gainNode);
+        gainNode.connect(compressorNode);
+        compressorNode.connect(pannerNode);
+        pannerNode.connect(analyserNode);
+        pannerNode.connect(audioCtx.destination);
+
+        isRunning = true;
+        applyAudioParams();
+        savePrefs();
+
+        powerBtn.classList.add('on');
+        powerLabel.textContent = 'ACTIVO';
+        statusBadge.classList.add('active');
+        statusText.textContent = 'Escuchando';
+
+        drawVisualizer();
+      } catch (err) {
+        stopAudio();
+        errorBox.textContent = 'No se pudo iniciar el micrófono seleccionado. Comprueba permisos o pulsa actualizar dispositivos.';
+        errorBox.style.display = 'block';
+      }
+    }
+
+    function stopAudio() {
+      isRunning = false;
+      if (animFrameId) {
+        cancelAnimationFrame(animFrameId);
+        animFrameId = null;
+      }
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(t => t.stop());
+        mediaStream = null;
+      }
+      if (audioCtx) {
+        audioCtx.close().catch(() => {});
+        audioCtx = null;
+      }
+      powerBtn.classList.remove('on');
+      powerLabel.textContent = 'ACTIVAR';
+      statusBadge.classList.remove('active');
+      statusText.textContent = 'En espera';
+      dbMeterLabel.textContent = '-- dB';
+      clearVisualizer();
+    }
+
+    function clearVisualizer() {
+      ctx.fillStyle = '#0b1120';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height / 2);
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+    }
+
+    function drawVisualizer() {
+      if (!isRunning || !analyserNode) return;
+      const bufferLength = analyserNode.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      analyserNode.getByteFrequencyData(dataArray);
+
+      ctx.fillStyle = '#0b1120';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      let sum = 0;
+      const bars = 32;
+      const step = Math.floor(bufferLength / bars);
+      const barWidth = (canvas.width / bars) - 3;
+
+      for (let i = 0; i < bars; i++) {
+        let val = 0;
+        for (let j = 0; j < step; j++) {
+          val += dataArray[i * step + j];
+        }
+        val = val / step;
+        sum += val;
+
+        const barHeight = Math.max(3, (val / 255) * (canvas.height - 8));
+        const x = i * (barWidth + 3) + 2;
+        const y = canvas.height - barHeight - 4;
+
+        if (val > 210) {
+          ctx.fillStyle = '#ef4444';
+        } else if (val > 145) {
+          ctx.fillStyle = '#f59e0b';
+        } else {
+          ctx.fillStyle = '#38bdf8';
+        }
+        ctx.beginPath();
+        ctx.roundRect(x, y, barWidth, barHeight, 3);
+        ctx.fill();
+      }
+
+      const avg = sum / bars;
+      const approxDb = avg > 1 ? Math.round(20 * Math.log10(avg / 255) + 90) : 30;
+      dbMeterLabel.textContent = `${approxDb} dB`;
+
+      animFrameId = requestAnimationFrame(drawVisualizer);
+    }
+
+    // Mode Buttons (Phone Mic vs Bluetooth/External Mic)
+    [modePhoneBtn, modeBtBtn].forEach(btn => {
+      btn.addEventListener('click', async () => {
+        micMode = btn.dataset.mode;
+        updateMicModeButtons();
+        await populateMicrophones(true);
+        savePrefs();
+        if (isRunning) {
+          stopAudio();
+          await startAudio();
+        }
+      });
+    });
+
+    micSelect.addEventListener('change', async () => {
+      const selectedOpt = micSelect.options[micSelect.selectedIndex];
+      const kind = classifyMic(selectedOpt ? selectedOpt.textContent : '');
+      micMode = (kind === 'bluetooth' || kind === 'wired') ? 'external' : 'phone';
+      updateMicModeButtons();
+      updateActiveMicLabel();
+      savePrefs();
+      if (isRunning) {
+        stopAudio();
+        await startAudio();
+      }
+    });
+
+    refreshMicsBtn.addEventListener('click', async () => {
+      await populateMicrophones(false);
+    });
+
+    if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+      navigator.mediaDevices.addEventListener('devicechange', async () => {
+        await populateMicrophones(true);
+        if (isRunning) {
+          stopAudio();
+          await startAudio();
+        }
+      });
+    }
+
+    powerBtn.addEventListener('click', () => {
+      if (isRunning) {
+        stopAudio();
+      } else {
+        startAudio();
+      }
+    });
+
+    gainSlider.addEventListener('input', updateUIValues);
+    trebleSlider.addEventListener('input', updateUIValues);
+    lowCutSlider.addEventListener('input', updateUIValues);
+    panSlider.addEventListener('input', updateUIValues);
+
+    gainDown.addEventListener('click', () => {
+      gainSlider.value = Math.max(0.5, (parseFloat(gainSlider.value) - 0.3).toFixed(1));
+      updateUIValues();
+    });
+
+    gainUp.addEventListener('click', () => {
+      gainSlider.value = Math.min(10, (parseFloat(gainSlider.value) + 0.3).toFixed(1));
+      updateUIValues();
+    });
+
+    limiterToggle.addEventListener('click', () => {
+      limiterEnabled = !limiterEnabled;
+      updateUIValues();
+    });
+
+    nrToggle.addEventListener('click', async () => {
+      noiseSuppressionEnabled = !noiseSuppressionEnabled;
+      updateUIValues();
+      if (isRunning) {
+        stopAudio();
+        await startAudio();
+      }
+    });
+
+    presetBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        presetBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const p = btn.dataset.preset;
+        if (p === 'natural') {
+          trebleSlider.value = 0;
+          lowCutSlider.value = 80;
+          if (voicePresenceFilter) voicePresenceFilter.gain.value = 0;
+        } else if (p === 'voice') {
+          trebleSlider.value = 6;
+          lowCutSlider.value = 180;
+          if (voicePresenceFilter) voicePresenceFilter.gain.value = 4;
+        } else if (p === 'tv') {
+          trebleSlider.value = 9;
+          lowCutSlider.value = 260;
+          if (voicePresenceFilter) voicePresenceFilter.gain.value = 5;
+        }
+        updateUIValues();
+      });
+    });
+
+    // Init
+    clearVisualizer();
+    updateUIValues();
+    populateMicrophones(true);
+  </script>
+</body>
+</html>
